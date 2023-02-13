@@ -15,7 +15,7 @@ function getRequests(mode) {
     $.ajax({
       url: url,
       type: 'get',
-      dataType: 'html',
+      dataType: 'json',
       beforeSend: function()
       {
         $('.d-none ').show();
@@ -27,16 +27,53 @@ function getRequests(mode) {
         $('#connections').hide();
         $('.d-none ').hide();
         if(mode=='sent'){
-         
+          
           $('#sent_requests').show();
           $('#recieved_requests').hide();
-          $('#sent_requests .content').html(data);
+          if(data.sentRequest.data<10){
+            $('#sent_requests #load_more_btn').hide();
+          }
+          $.each(data.sentRequest.data, function (key, value) {
+            
+          $('#sent_requests .content').append('<div class="my-2 shadow text-white bg-dark p-1" id="">\
+                    <div class="d-flex justify-content-between">\
+                      <table class="ms-1">\
+                        <td class="align-middle">'+value.name+'</td>\
+                        <td class="align-middle"> - </td>\
+                        <td class="align-middle">'+value.email+'</td>\
+                        <td class="align-middle">\
+                      </table>\
+                      <div>\
+                        <input type="text" value="'+value.id+'" hidden name="user_withdraw" id="user_withdraw">\
+                          <button id="cancel_request_btn_" class="btn btn-danger me-1" onclick="deleteRequest('+value.id+')">Withdraw Request</button>\
+                     </div>\
+                    </div>\
+                  </div>\
+                  ');});
         }
 
         if(mode=='recieved'){
+          
           $('#recieved_requests').show();
         $('#sent_requests').hide();
-        $('#recieved_requests .content').html(data);
+        if(data.recRequest.data<10){
+          $('#recieved_requests #load_more_btn').hide();
+        }
+        $.each(data.recRequest.data, function (key, recRequest) {
+          $('#recieved_requests .content').append('<div class="my-2 shadow text-white bg-dark p-1" id="">\
+                    <div class="d-flex justify-content-between">\
+                      <table class="ms-1">\
+                        <td class="align-middle">'+recRequest.name+'</td>\
+                        <td class="align-middle"> - </td>\
+                        <td class="align-middle">'+recRequest.email+'</td>\
+                        <td class="align-middle">\
+                      </table>\
+                      <div>\
+                        <button id="accept_request_btn_" class="btn btn-primary me-1" onclick="acceptRequest('+recRequest.id+')">Accept</button>\
+                     </div>\
+                    </div>\
+                  </div>\
+                  ');});
       }
         
         
@@ -52,39 +89,70 @@ function getMoreRequests(mode) {
     var url=site_url +'/get-sent-requests?page='+page;}
     if(mode=='recieved'){
       var url=site_url +'/get-recieved-request?page='+page;}
- 
 
       $.ajax({
         url: url,
         type: 'get',
-        dataType: 'html',
+        dataType: 'json',
         beforeSend: function()
         {
           $('.d-none ').show();
         }
       })
         .done( function(data) {
-          
+       
           $('#suggessions').hide();
           $('#connections').hide();
           $('.d-none ').hide();
           if(mode=='sent'){
+          $('#sent_requests').show();
+          $('#recieved_requests').hide();
+          console.log(data);
+          $.each(data.sentRequest.data, function (key, value) {
             
-            $('#sent_requests').show();
-            if(data===''){
-              $('#sent_requests .justify-content-center .btn').hide();
-            }
-            $('#recieved_requests').hide();
-            $('#sent_requests .content').append(data);
+          $('#sent_requests .content').append('<div class="my-2 shadow text-white bg-dark p-1" id="">\
+                    <div class="d-flex justify-content-between">\
+                      <table class="ms-1">\
+                        <td class="align-middle">'+value.name+'</td>\
+                        <td class="align-middle"> - </td>\
+                        <td class="align-middle">'+value.email+'</td>\
+                        <td class="align-middle">\
+                      </table>\
+                      <div>\
+                        <input type="text" value="'+value.id+'" hidden name="user_withdraw" id="user_withdraw">\
+                          <button id="cancel_request_btn_" class="btn btn-danger me-1" onclick="deleteRequest('+value.id+')">Withdraw Request</button>\
+                     </div>\
+                    </div>\
+                  </div>\
+                  ');});
+                  if(data.sentRequest.data<10){
+                    $('#sent_requests #load_more_btn').hide();
+                  }
           }
   
           if(mode=='recieved'){
             $('#recieved_requests').show();
-            if(data===''){
-              $('#recieved_requests .justify-content-center .btn').hide();
-            }
-          $('#sent_requests').hide();
-          $('#recieved_requests  .content').append(data);
+            $('#sent_requests').hide();
+            
+            $.each(data.recRequest.data, function (key, recRequest) {
+              console.log(value);
+              $('#recieved_requests .content').append('<div class="my-2 shadow text-white bg-dark p-1" id="">\
+                        <div class="d-flex justify-content-between">\
+                          <table class="ms-1">\
+                            <td class="align-middle">'+recRequest.name+'</td>\
+                            <td class="align-middle"> - </td>\
+                            <td class="align-middle">'+recRequest.email+'</td>\
+                            <td class="align-middle">\
+                          </table>\
+                          <div>\
+                            <button id="accept_request_btn_" class="btn btn-primary me-1" onclick="acceptRequest('+recRequest.id+')">Accept</button>\
+                         </div>\
+                        </div>\
+                      </div>\
+                      ');});
+                      if(data.recRequest.data<10){
+                        $('#recieved_requests #load_more_btn').hide();
+                      }
         }
           
           
@@ -108,18 +176,47 @@ $.ajax({
   }
 })
   .done( function(data) {
-    
+    console.log(data);
+    $.each(data.connections.data, function (key, value) {
+      $('#connections .content').append('<div class="my-2 shadow text-white bg-dark p-1" id="">\
+      <div class="d-flex justify-content-between">\
+        <table class="ms-1">\
+          <td class="align-middle">'+value.name+'</td>\
+          <td class="align-middle"> - </td>\
+          <td class="align-middle">'+value.email+'</td>\
+          <td class="align-middle">\
+        </table>\
+        <div><button style="width: 220px" id="get_connections_in_common_" class="btn btn-primary" type="button" onclick="getConnectionsInCommon('+value.id+')" \
+            data-bs-toggle="collapse" data-bs-target="#collapse_" aria-expanded="false" aria-controls="collapseExample">\
+            Connections in common ('+data.connections.data.length+')\
+          </button>\
+          <input type="text" value='+value.id+' hidden name="unfriend" id="unfriend">\
+          <button id="remove_friend_btn_" class="btn btn-danger me-1" onclick="removeConnection('+value.id+')">Remove Connection</button>\
+        </div>\
+      </div>\
+      <div class="collapse" id="collapse_">\
+        <div id="content_" class="p-2">\
+       </div>\
+       <div class="d-flex justify-content-center w-100 py-2">\
+          <button class="btn btn-sm btn-primary" id="load_more_connections_in_common_" onclick="getMoreConnectionsInCommon('+value.id+')">Load\
+            more</button>\
+        </div>\
+      </div>\
+    </div>');
+    });
     $('#suggessions').hide();
     $('#connections').show();
     $('.d-none ').hide();
+
     $('#recieved_requests').hide();
     $('#sent_requests').hide();
-    $('#get_connections_btn').html('Connection('+data.count+'');
-    $('#connections .content').append(data.data);
-    
+    $('#get_connections_btn').html('Connection('+data.count+')');
+    if(data.connections.data<10){
+      $('#connections #load_more_btn').hide();
+    }
     
      
-  })
+  });
 }
 
 function getMoreConnections() {
@@ -128,37 +225,63 @@ function getMoreConnections() {
   var url=site_url +'/get-connections?page='+page;
 
   $.ajax({
-          url: url,
-          type: 'get',
-          
-          dataType: 'JSON',
-          beforeSend: function()
-          {
-            $('#connections_in_common_skeleton').show();
-          }
-        }) .done( function(data) {
+    url: url,
+    type: 'get',
+    dataType: 'json',
+    beforeSend: function()
+    {
+      $('.d-none ').show();
+    }
+  })
+    .done( function(data) {
+      console.log(data.count);
+      $.each(data.connections.data, function (key, value) {
+        $('#connections .content').append('<div class="my-2 shadow text-white bg-dark p-1" id="">\
+        <div class="d-flex justify-content-between">\
+          <table class="ms-1">\
+            <td class="align-middle">'+value.name+'</td>\
+            <td class="align-middle"> - </td>\
+            <td class="align-middle">'+value.email+'</td>\
+            <td class="align-middle">\
+          </table>\
+          <div><button style="width: 220px" id="get_connections_in_common_" class="btn btn-primary" type="button" onclick="getConnectionsInCommon('+value.id+')" \
+              data-bs-toggle="collapse" data-bs-target="#collapse_" aria-expanded="false" aria-controls="collapseExample">\
+              Connections in common ('+data.connections.data.length+')\
+            </button>\
+            <input type="text" value='+value.id+' hidden name="unfriend" id="unfriend">\
+            <button id="remove_friend_btn_" class="btn btn-danger me-1" onclick="removeConnection('+value.id+')">Remove Connection</button>\
+          </div>\
+        </div>\
+        <div class="collapse" id="collapse_">\
+          <div id="content_" class="p-2">\
+          </div>\
+          <div class="d-flex justify-content-center w-100 py-2">\
+            <button class="btn btn-sm btn-primary" id="load_more_connections_in_common_" onclick="getMoreConnectionsInCommon('+value.id+')">Load\
+              more</button>\
+          </div>\
+        </div>\
+      </div>');
+      });
+      $('#suggessions').hide();
+      $('#connections').show();
+      $('.d-none ').hide();
+  
+      $('#recieved_requests').hide();
+      $('#sent_requests').hide();
+      $('#get_connections_btn').html('Connection('+data.count+')');
+      if(data.connections.data<10){
+        $('#connections #load_more_btn').hide();
+      }
+      
        
-          $('#recieved_requests').hide();
-          $('#sent_requests').hide();
-          $('#suggessions').hide();
-          $('#connections').show();
-          if(data.data===''){
-            $('#connections .justify-content-center .btn').hide();
-          }
-          
-          $('#get_connections_btn').html('Connection('+data.count+'');
-          $('#connections .content').append(data.data);
-          
-          
-           
-        })
+    });
       page++;
 }
 
-function getConnectionsInCommon(userId, connectionId) {
+function getConnectionsInCommon( connectionId) {
  
   var url=site_url +'/get-common-connections';
-  alert(url)
+ 
   $.ajax({
           url: url,
           type: 'get',
@@ -167,14 +290,35 @@ function getConnectionsInCommon(userId, connectionId) {
         },
           dataType: 'JSON',
           success: function(data) {
-              alert(data);
-          }
-      });
+            $.each(data.Commonconnections.data, function (key, value) {
+            $("#content_").append('<div class="p-2 shadow rounded mt-2  text-white bg-dark">'+value.name+' - '+value.email+'</div>');
+              console.log(data.Commonconnections.data);
+             
+            });
+          }});
 }
 
-function getMoreConnectionsInCommon(userId, connectionId) {
+function getMoreConnectionsInCommon( connectionId) {
   // Optional: Depends on how you handle the "Load more"-Functionality
   // your code here...
+
+  var url=site_url +'/get-common-connections?page='+page;
+ 
+  $.ajax({
+          url: url,
+          type: 'get',
+          data: {
+            id: connectionId,
+        },
+          dataType: 'JSON',
+          success: function(data) {
+            alert('hello');
+            $.each(data.Commonconnections.data, function (key, value) {
+            $("#content_").append('<div class="p-2 shadow rounded mt-2  text-white bg-dark">'+value.name+' - '+value.email+'</div>');
+              console.log(data.Commonconnections.data);
+              $("#load_more_connections_in_common_").hide();
+            });
+          }});
 }
 
 function getSuggestions() {
@@ -185,22 +329,42 @@ function getSuggestions() {
   $.ajax({
           url: url,
           type: 'get',
-          dataType: 'html',
+          dataType: 'json',
           beforeSend: function()
           {
             $('.d-none ').show();
           }
         })
           .done( function(data) {
+            console.log(data.suggessions.data);
+
+            $.each(data.suggessions.data, function (key, value) {
+              $('#suggessions .content').append('<div class="my-2 shadow  text-white bg-dark p-1" id="" >\
+                        <div class="d-flex justify-content-between">\
+                          <table class="ms-1">\
+                            <td class="align-middle">'+value.name+'</td>\
+                            <td class="align-middle"> - </td>\
+                            <td class="align-middle">'+value.email+'</td>\
+                            <td class="align-middle"> \
+                          </table>\
+                          <div>\
+                            <input type="text" value="'+value.id+'" hidden name="user_requested" id="user_requested">\
+                            <button id="create_request_btn_" class="btn btn-primary me-1" onclick="sendRequest('+value.id+')" >Connect</button>\
+                          </div>\
+                        </div>\
+                      </div>');});
        
             $('.d-none ').hide();
             $('#suggessions').show();
             $('#sent_requests').show();
-      
+            $('#get_suggessions_btn').html('');
+            $('#get_suggessions_btn').html('Suggessions('+data.count+')');
             $('#sent_requests').hide();
             $('#recieved_requests').hide();
             $('#connections').hide();
-            $('#suggessions .content').append(data);
+            if(data.suggessions.data<10){
+              $('#suggessions #load_more_btn').hide();
+            }
             
              
           });
@@ -219,32 +383,51 @@ function getMoreSuggestions() {
   var url=site_url +'/get-suggessions?page='+page;
 
   $.ajax({
-          url: url,
-          type: 'get',
-          
-          dataType: 'html',
-          beforeSend: function()
-          {
-            $('.d-none ').show();
-          }
-        }) .done( function(data) {
-     
-          $('.d-none ').hide();
-            $('#suggessions').show();
-            $('#sent_requests').show();
+    url: url,
+    type: 'get',
+    dataType: 'json',
+    beforeSend: function()
+    {
+      $('.d-none ').show();
+    }
+  })
+    .done( function(data) {
+      console.log(data.suggessions.data);
+
+      $.each(data.suggessions.data, function (key, value) {
+        $('#suggessions .content').append('<div class="my-2 shadow  text-white bg-dark p-1" id="" >\
+                  <div class="d-flex justify-content-between">\
+                    <table class="ms-1">\
+                      <td class="align-middle">'+value.name+'</td>\
+                      <td class="align-middle"> - </td>\
+                      <td class="align-middle">'+value.email+'</td>\
+                      <td class="align-middle"> \
+                    </table>\
+                    <div>\
+                      <input type="text" value="'+value.id+'" hidden name="user_requested" id="user_requested">\
+                      <button id="create_request_btn_" class="btn btn-primary me-1" onclick="sendRequest('+value.id+')" >Connect</button>\
+                    </div>\
+                  </div>\
+                </div>');});
+ 
+      $('.d-none ').hide();
+      $('#suggessions').show();
+      $('#sent_requests').show();
+      $('#get_suggessions_btn').html('Suggessions(<span id="count">'+data.count+'</span>');
+      $('#sent_requests').hide();
+      $('#recieved_requests').hide();
+      $('#connections').hide();
+      if(data.suggessions.data<10){
+        $('#suggessions #load_more_btn').hide();
+      }
+    
       
-            $('#sent_requests').hide();
-            $('#recieved_requests').hide();
-            $('#connections').hide();
-            $('#suggessions .content').append(data);
-          
-          
-           
-        })
+       
+    });
       page++;
 }
 
-function sendRequest(userId, suggestionId) {
+function sendRequest( suggestionId) {
   // your code here...
   var url=site_url +'/send-request';
 
@@ -274,7 +457,7 @@ function sendRequest(userId, suggestionId) {
         
 }
 
-function deleteRequest(userId, requestId) {
+function deleteRequest(requestId) {
   
   var url=site_url +'/delete-request';
 
@@ -292,7 +475,7 @@ function deleteRequest(userId, requestId) {
 
 }
 
-function acceptRequest(userId, requestId) {
+function acceptRequest( requestId) {
   
 
   var url=site_url +'/accept-request';
@@ -310,7 +493,7 @@ function acceptRequest(userId, requestId) {
         });
 }
 
-function removeConnection(userId, connectionId) {
+function removeConnection( connectionId) {
   var url=site_url +'/remove-connection';
 
     $.ajax({

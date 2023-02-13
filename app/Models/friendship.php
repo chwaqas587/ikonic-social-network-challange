@@ -10,4 +10,6 @@ class friendship extends Model
     use HasFactory;
 
     protected $fillable = ['requester_id','user_requested','status'];
+
+  
 }

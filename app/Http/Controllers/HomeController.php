@@ -24,18 +24,21 @@ class HomeController extends Controller
      */
     public function index()
     {
+$d1=auth()->user()->friends()->get();
+        
         $requesterId = Auth::user()->id;
        
          $friends=friendship::get();
-         $sentRequests=$friends->where('requester_id',$requesterId)->where('status',0)->pluck('user_requested');
-         $recievedRequests=$friends->where('user_requested',$requesterId)->where('status',0)->pluck('requester_id');
-         $connects=friendship::where('status',1)->where(function($query) {$query->where('requester_id',Auth::user()->id)->orWhere('user_requested',Auth::user()->id);})->pluck('user_requested');
+         $sentRequests=auth()->user()->pendingFriendsTo()->paginate(10);
+         $sentCount=auth()->user()->pendingFriendsTo()->count();
+         $recievedRequests=auth()->user()->pendingFriendsFrom()->paginate(10);
+         $recievedCount=auth()->user()->pendingFriendsTo()->count();
          $allFriends=$friends->pluck('user_requested');
-         $suggessions=User::whereNotIn('id',$allFriends)->whereNot('id',$requesterId)->get();
-         $sentRequests=User::whereIn('id',$sentRequests)->get();
-         $recievedRequests=User::whereIn('id',$recievedRequests)->get();
-         $connections=User::whereIn('id',$connects)->get();
-        return view('home',compact('suggessions','sentRequests','recievedRequests','connections','connects'));
+         $suggessions=User::whereNotIn('id',$allFriends)->whereNot('id',$requesterId)->paginate(10);
+         $suggessionsCount=User::whereNotIn('id',$allFriends)->whereNot('id',$requesterId)->count();
+         $connections=auth()->user()->friends()->paginate(10);
+        $connects= auth()->user()->friends()->count();
+        return view('home',compact('suggessionsCount','suggessions','sentRequests','recievedRequests','connections','connects'));
     }
 
 
